@@ -13,14 +13,17 @@ USER_HOME="/home/$USERNAME"
 log() {
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
-
+# Vérification de packet installé 
 check_and_install() {
   local pkg=$1
-  if dpkg -s "$pkg" &>/dev/null; then
+# Vérification du packet installé avec dpkg -s / &>>/dev/null sert a éviter l'affichage inutile 
+ if dpkg -s "$pkg" &>/dev/null; then
     log "$pkg is already installed."
+# Le else sert a faire une alternative au if précedant 
   else
     log "Installing $pkg..."
     apt install -y "$pkg" &>>"$LOG_FILE"
+# [ $? -eq 0 ]; then  sert a vérifier la comande précédante en designant si elle est validé avec un 0 ( Success inst "else" Fail instal)
     if [ $? -eq 0 ]; then
       log "$pkg successfully installed."
     else
@@ -52,10 +55,11 @@ log "Updating system packages..."
 apt update && apt upgrade -y &>>"$LOG_FILE"
 
 # === 2. PACKAGE INSTALLATION ===
-if [ -f "$PACKAGE_LIST" ]; then
-  log "Reading package list from $PACKAGE_LIST"
-  while IFS= read -r pkg || [[ -n "$pkg" ]]; do
-    [[ -z "$pkg" || "$pkg" =~ ^# ]] && continue
+if [ -f "$PACKAGE_LIST" ]; then #-f vérifie si le fichier exite
+  log "Reading package list from $PACKAGE_LIST" #indique qu'il lit le fichier
+  while IFS= read -r pkg  [[ -n "$pkg" ]]; do # faire une boucle qui parcours toutes les lignes en ignorant
+  # les commentaires et les espaces vides, a chaque ligne il lui reste donc uniquement le nom du packet à installer et il l'installe
+    [[ -z "$pkg"  "$pkg" =~ ^# ]] && continue  # Ignore les lignes vides et les commentaires
     check_and_install "$pkg"
   done < "$PACKAGE_LIST"
 else
