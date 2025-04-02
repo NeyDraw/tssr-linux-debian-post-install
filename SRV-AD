@@ -4,8 +4,8 @@ $StaticIP = "192.168.1.200"
 $SubnetMask = "255.255.255.0"
 $Gateway = "192.168.1.1"
 $DNSServer = "192.168.1.200"
-$DomainName = "mondomaine.local"
-$SafeModePassword = ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force
+$DomainName = "SRV.Draw"
+$SafeModePassword = ConvertTo-SecureString "SrvDraw37*" -AsPlainText -Force
 $CSVFile = "C:\Users\Administrator\users.csv"
 
 # 1. Renommer la machine
@@ -33,12 +33,39 @@ New-ADOrganizationalUnit -Name "Administrateurs" -Path "DC=mondomaine,DC=local"
 New-ADOrganizationalUnit -Name "Utilisateurs" -Path "DC=mondomaine,DC=local"
 New-ADOrganizationalUnit -Name "Techniciens" -Path "DC=mondomaine,DC=local"
 
-# 6. Importer les utilisateurs depuis un fichier CSV
+# Importer le module Active Directory
+Import-Module ActiveDirectory
+
+# Définir le chemin du fichier CSV
+$CSVFile = "C:\Users\Administrator\users.csv"
+
+# Définir le domaine et l'OU cible
+$DomainName = "mondomaine.local"
+$OUPath = "OU=Utilisateurs,DC=mondomaine,DC=local"
+
+# Vérifier si le fichier CSV existe
 if (Test-Path $CSVFile) {
+    # Importer les utilisateurs du fichier CSV
     $Users = Import-Csv -Path $CSVFile
+
     foreach ($User in $Users) {
-        New-ADUser -Name $User.Name -GivenName $User.FirstName -Surname $User.LastName -UserPrincipalName "$($User.Username)@$DomainName" -SamAccountName $User.Username -Path "OU=Utilisateurs,DC=mondomaine,DC=local" -AccountPassword (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) -Enabled $true
+        # Générer l'adresse e-mail si absente
+        $Email = if ($User.Email -ne "") { $User.Email } else { "$($User.Username)@$DomainName" }
+
+        # Création du compte utilisateur
+        New-ADUser `
+            -Name "$($User.FirstName) $($User.LastName)" `
+            -GivenName $User.FirstName `
+            -Surname $User.LastName `
+            -UserPrincipalName "$($User.Username)@$DomainName" `
+            -SamAccountName $User.Username `
+            -EmailAddress $Email `
+            -Path $OUPath `
+            -AccountPassword (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) `
+            -Enabled $true
+
+        Write-Host "Utilisateur $($User.Username) créé avec succès."
     }
-    Write-Host "Utilisateurs importés avec succès !"
 } else {
-    Write-Host "Fichier CSV profils"
+    Write-Host "Erreur : Le fichier CSV n'existe pas !"
+}
