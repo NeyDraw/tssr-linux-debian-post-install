@@ -17,3 +17,9 @@ Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 
 # 4. Promouvoir en contrôleur de domaine
 Install-ADDSForest -DomainName $DomainName -SafeModeAdministratorPassword $SafeModePassword -Force
+
+# Création des OU
+Import-Module ActiveDirectory
+New-ADOrganizationalUnit -Name "Administrateurs" -Path "DC=mondomaine,DC=local"
+New-ADOrganizationalUnit -Name "Utilisateurs" -Path "DC=mondomaine,DC=local"
+New-ADOrganizationalUnit -Name "Techniciens" -Path "DC=mondomaine,DC=local"
