@@ -1,4 +1,6 @@
 nmap
 net-tools
 htop
+php
+apache2
 curl
