@@ -8,9 +8,9 @@ Write-Host "Vérification de la configuration réseau :"
 Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -eq $StaticIP}
 
 # Paramètres réseau
-$ipAddress = "192.168.0.100"
+$ipAddress = "10.0.0.200"
 $subnetMask = 24  # Windows utilise un préfixe (ex: 255.255.255.0 = 24)
-$gateway = "192.168.0.254"
+$gateway = "10.0.0.254"
 $dnsServer = "1.1.1.1"
 $interfaceName = "Ethernet0"  # ⚠️ Vérifie avec Get-NetAdapter
 
